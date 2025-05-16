@@ -43,18 +43,24 @@ export function handleAlignToScaleBounds(
   const { wrapperComponent } = contextInstance;
   const { minScale, limitToBounds, zoomAnimation } = contextInstance.setup;
   const { disabled, animationTime, animationType } = zoomAnimation;
-
   const isDisabled = disabled || scale >= minScale;
-
   if (scale >= 1 || limitToBounds) {
     // fire fit to bounds animation
     handleAlignToBounds(contextInstance);
   }
-
   if (isDisabled || !wrapperComponent || !contextInstance.mounted) return;
 
-  const mouseX = mousePositionX || wrapperComponent.offsetWidth / 2;
-  const mouseY = mousePositionY || wrapperComponent.offsetHeight / 2;
+  // 스크롤 위치를 고려한 마우스 위치 계산
+  const scrollLeft = wrapperComponent.scrollLeft || 0;
+  const scrollTop = wrapperComponent.scrollTop || 0;
+  const mouseX =
+    mousePositionX !== undefined
+      ? mousePositionX + scrollLeft
+      : wrapperComponent.offsetWidth / 2 + scrollLeft;
+  const mouseY =
+    mousePositionY !== undefined
+      ? mousePositionY + scrollTop
+      : wrapperComponent.offsetHeight / 2 + scrollTop;
 
   const targetState = handleZoomToPoint(
     contextInstance,
@@ -62,7 +68,6 @@ export function handleAlignToScaleBounds(
     mouseX,
     mouseY,
   );
-
   if (targetState) {
     animate(contextInstance, targetState, animationTime, animationType);
   }
